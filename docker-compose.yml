@@ -1,0 +1,46 @@
+services:
+  # Backend service
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: emotion-api-backend
+    ports:
+      - "8000:8000"
+    environment:
+      - PYTHONUNBUFFERED=1
+      - MODEL_PATH=/app/emotion_model_final
+    volumes:
+      - ./emotion_model_final:/app/emotion_model_final
+    networks:
+      - emotion-network
+    healthcheck:
+      test: [ "CMD", "curl", "-f", "http://localhost:8000/" ]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 30s
+
+  # Frontend service
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    container_name: emotion-analyzer-frontend
+    ports:
+      - "5173:5173"
+    depends_on:
+      backend:
+        condition: service_healthy
+    networks:
+      - emotion-network
+    environment:
+      - VITE_API_BASE_URL=http://backend:8000
+
+networks:
+  emotion-network:
+    driver: bridge
+
+volumes:
+  model-data:
+    driver: local
