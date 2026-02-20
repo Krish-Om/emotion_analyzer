@@ -8,10 +8,18 @@ interface TextInputProps {
   isAnalyzing: boolean;
 }
 
+
 export default function TextInput({ text, setText, onAnalyze, onClear, isAnalyzing }: TextInputProps) {
+  // Helper to check if input is only numeric digits (ignoring whitespace)
+  const isOnlyDigits = (input: string) => {
+    return /^\d+$/.test(input.replace(/\s+/g, ''));
+  };
+
   const handleKeyPress = (e: React.KeyboardEvent) => {
     if (e.key === 'Enter' && e.ctrlKey) {
-      onAnalyze();
+      if (!isOnlyDigits(text)) {
+        onAnalyze();
+      }
     }
   };
 
@@ -61,8 +69,12 @@ Try: 'I'm so excited about this opportunity! It's absolutely amazing!'"
             </button>
 
             <button
-              onClick={onAnalyze}
-              disabled={!text.trim() || isAnalyzing}
+              onClick={() => {
+                if (!isOnlyDigits(text)) {
+                  onAnalyze();
+                }
+              }}
+              disabled={!text.trim() || isAnalyzing || isOnlyDigits(text)}
               className="group/btn relative px-8 py-2.5 font-bold text-white rounded-lg overflow-hidden transition-all disabled:opacity-40 disabled:cursor-not-allowed flex items-center gap-2"
             >
               <div className="absolute inset-0 bg-gradient-to-r from-cyan-500 via-blue-500 to-purple-500 opacity-100 group-hover/btn:opacity-90 transition-opacity" />
@@ -87,6 +99,9 @@ Try: 'I'm so excited about this opportunity! It's absolutely amazing!'"
 
         <p className="text-xs text-gray-500 mt-4 text-right">
           Press Ctrl + Enter to analyze
+          {isOnlyDigits(text) && (
+            <span className="block text-red-400 mt-1">Input cannot be only numeric digits.</span>
+          )}
         </p>
       </div>
     </div>

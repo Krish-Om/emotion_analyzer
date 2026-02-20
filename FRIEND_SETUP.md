@@ -38,7 +38,7 @@ emotion_model_final/
 
 ### 3. Start the Application
 ```bash
-docker-compose up -d
+docker compose up -d
 ```
 
 Wait 2-3 minutes for Docker to build and start services.

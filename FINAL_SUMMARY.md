@@ -51,7 +51,7 @@ python app.py
 ### Terminal 2: Frontend
 ```bash
 cd /home/krishom/ritik/frontend
-npm run dev
+bun run dev
 ```
 ✅ Runs on `http://localhost:5173`
 
