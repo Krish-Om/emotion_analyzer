@@ -65,7 +65,7 @@ class LLMService:
                 EMOTION_LABELS[i]: float(probabilities[0][i].item())
                 for i in range(len(EMOTION_LABELS))
             }
-
+            
             return {
                 "text": text,
                 "emotion": emotion,
