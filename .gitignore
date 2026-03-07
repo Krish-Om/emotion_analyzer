@@ -41,6 +41,7 @@ dist/
 
 # Project specific
 emotion_model_final/
+emotionanalyzer/
 .env
 
 # Docker

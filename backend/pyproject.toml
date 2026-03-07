@@ -11,4 +11,11 @@ dependencies = [
     "safetensors>=0.4.0",
     "pydantic>=2.12.5",
     "numpy>=2.0.2",
+    "ipykernel>=6.31.0",
+    "pandas>=2.3.3",
+    "scikit-learn>=1.6.1",
+    "seaborn>=0.13.2",
+    "matplotlib>=3.9.4",
+    "nbconvert>=7.17.0",
+    "jupyter>=1.1.1",
 ]
