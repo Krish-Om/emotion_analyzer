@@ -1,17 +1,18 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
-
-import os
-import sys
-from pathlib import Path
-
-# Add backend directory to path
-sys.path.insert(0, str(Path(__file__).parent))
-
-
+from app import LLMService
+from contextlib import asynccontextmanager
 from app import router
 
-app = FastAPI(title="Emotion Analysis API", version="1.0.0")
+
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    app.state.llmservice = LLMService()
+    yield
+    app.state.llmservice.clear()
+
+
+app = FastAPI(title="Emotion Analysis API", version="1.0.0", lifespan=lifespan)
 
 # Add CORS middleware
 app.add_middleware(

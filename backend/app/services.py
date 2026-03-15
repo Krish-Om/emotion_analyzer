@@ -65,7 +65,7 @@ class LLMService:
                 EMOTION_LABELS[i]: float(probabilities[0][i].item())
                 for i in range(len(EMOTION_LABELS))
             }
-            
+
             return {
                 "text": text,
                 "emotion": emotion,
@@ -75,3 +75,10 @@ class LLMService:
 
         except Exception as e:
             raise RuntimeError(f"Error analyzing emotion: {str(e)}")
+
+    def clear(self) -> None:
+        """Release model resources during application shutdown."""
+        self.model.model = None
+        self.model.tokenizer = None
+        if torch.cuda.is_available():
+            torch.cuda.empty_cache()

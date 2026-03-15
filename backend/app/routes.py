@@ -1,24 +1,20 @@
-from fastapi import APIRouter, HTTPException
+from fastapi import APIRouter, HTTPException, Request
 from .model import EmotionResponse, TextInput
 from .llm_model import EMOTION_LABELS
 
 router = APIRouter()
 
-# Lazy initialization to avoid circular imports
-analyzer = None
 
-
-def get_analyzer():
-    global analyzer
+def get_analyzer(request: Request):
+    analyzer = getattr(request.app.state, "llmservice", None)
     if analyzer is None:
-        from .services import LLMService
-        analyzer = LLMService()
+        raise HTTPException(status_code=503, detail="Service not initialized")
     return analyzer
 
 
 @router.get("/")
-def read_root():
-    analyzer = get_analyzer()
+def read_root(request: Request):
+    analyzer = get_analyzer(request)
     return {
         "status": "ok",
         "message": "Emotion Analysis API is running",
@@ -34,8 +30,8 @@ def get_emotions():
 
 # POST endpoint - Analyze emotion
 @router.post("/analyze", response_model=EmotionResponse)
-def analyze_emotion(input_data: TextInput):
-    analyzer = get_analyzer()
+def analyze_emotion(input_data: TextInput, request: Request):
+    analyzer = get_analyzer(request)
     if not analyzer.model.is_loaded():
         raise HTTPException(status_code=500, detail="Model not loaded")
 

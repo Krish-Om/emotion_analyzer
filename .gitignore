@@ -23,7 +23,7 @@ wheels/
 venv/
 ENV/
 env/
-
+*.7z
 # Node/Frontend
 node_modules/
 .env.local
@@ -49,3 +49,4 @@ emotionanalyzer/
 
 # OS
 *.Zone.Identifier
+*.zip
