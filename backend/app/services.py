@@ -21,6 +21,12 @@ if not MODEL_PATH:
         MODEL_PATH = str(local_model_path.resolve())
 
 
+def filter_top_emotions(scores: dict, top_n: int = 3) -> dict:
+    """Filter emotion scores to only include top N emotions by score."""
+    sorted_emotions = sorted(scores.items(), key=lambda x: x[1], reverse=True)
+    return {emotion: score for emotion, score in sorted_emotions[:top_n]}
+
+
 class LLMService:
     def __init__(self) -> None:
         self.model = EmotionAnalyzer(MODEL_PATH)
@@ -65,12 +71,16 @@ class LLMService:
                 EMOTION_LABELS[i]: float(probabilities[0][i].item())
                 for i in range(len(EMOTION_LABELS))
             }
+            # Filter to top 3 emotions
+            top_emotions = filter_top_emotions(scores, top_n=3)
+            # Get confidence from the highest-scoring emotion in top 3
+            top_emotion = max(top_emotions.items(), key=lambda x: x[1])
 
             return {
                 "text": text,
                 "emotion": emotion,
-                "scores": scores,
-                "confidence": float(probabilities[0][predicted_class].item()),
+                "scores": top_emotions,
+                "confidence": float(top_emotion[1]),
             }
 
         except Exception as e:
