@@ -21,10 +21,22 @@ if not MODEL_PATH:
         MODEL_PATH = str(local_model_path.resolve())
 
 
-def filter_top_emotions(scores: dict, top_n: int = 3) -> dict:
-    """Filter emotion scores to only include top N emotions by score."""
+def format_predictions(scores: dict, top_n: int = 3) -> list:
+    """
+    Format emotion scores as a list of predictions with label and score.
+
+    Args:
+        scores: Dictionary of emotion labels to confidence scores
+        top_n: Number of top predictions to return
+
+    Returns:
+        List of dicts with 'label' and 'score' keys, sorted by score descending
+    """
     sorted_emotions = sorted(scores.items(), key=lambda x: x[1], reverse=True)
-    return {emotion: score for emotion, score in sorted_emotions[:top_n]}
+    return [
+        {"label": emotion, "score": round(float(score), 4)}
+        for emotion, score in sorted_emotions[:top_n]
+    ]
 
 
 class LLMService:
@@ -60,27 +72,20 @@ class LLMService:
                 outputs = self.model.model(**inputs)
 
             logits = outputs.logits
-            probabilities = torch.softmax(logits, dim=-1)
-            predicted_class = torch.argmax(probabilities, dim=-1).item()
+            # Use sigmoid for multi-label classification - each emotion is independent
+            probabilities = torch.sigmoid(logits)
 
-            # Get emotion label
-            emotion = EMOTION_LABELS[predicted_class]
-
-            # Prepare scores for all emotions
+            # Prepare scores for all emotions (independent probabilities 0-100%)
             scores = {
                 EMOTION_LABELS[i]: float(probabilities[0][i].item())
                 for i in range(len(EMOTION_LABELS))
             }
-            # Filter to top 3 emotions
-            top_emotions = filter_top_emotions(scores, top_n=3)
-            # Get confidence from the highest-scoring emotion in top 3
-            top_emotion = max(top_emotions.items(), key=lambda x: x[1])
+            # Format as list of top 3 predictions
+            predictions = format_predictions(scores, top_n=3)
 
             return {
                 "text": text,
-                "emotion": emotion,
-                "scores": top_emotions,
-                "confidence": float(top_emotion[1]),
+                "predictions": predictions,
             }
 
         except Exception as e:

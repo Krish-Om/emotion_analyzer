@@ -1,9 +1,8 @@
 import { Smile, Frown, Heart, AlertCircle, Laugh, Meh, Flame, Lightbulb, Sparkles } from 'lucide-react';
 
 interface EmotionResult {
-  emotion: string;
-  confidence: number;
-  scores?: Record<string, number>;
+  label: string;
+  score: number;
 }
 
 interface EmotionResultsProps {
@@ -52,6 +51,7 @@ const emotionColors: Record<string, {
 
 export default function EmotionResults({ emotions, isAnalyzing }: EmotionResultsProps) {
   const primaryEmotion = emotions[0];
+  const primaryEmotionLabel = primaryEmotion?.label || '';
 
   if (isAnalyzing) {
     return (
@@ -92,7 +92,7 @@ export default function EmotionResults({ emotions, isAnalyzing }: EmotionResults
     );
   }
 
-  const colors = emotionColors[primaryEmotion.emotion] || emotionColors.neutral;
+  const colors = emotionColors[primaryEmotionLabel] || emotionColors.neutral;
 
   return (
     <div className="group relative">
@@ -111,7 +111,7 @@ export default function EmotionResults({ emotions, isAnalyzing }: EmotionResults
             <div>
               <p className="text-sm text-gray-300 font-medium">Primary Emotion</p>
               <p className={`text-4xl font-black ${colors.text} capitalize drop-shadow-lg`}>
-                {primaryEmotion.emotion}
+                {primaryEmotionLabel}
               </p>
             </div>
           </div>
@@ -120,62 +120,60 @@ export default function EmotionResults({ emotions, isAnalyzing }: EmotionResults
             <div className="flex justify-between items-center mb-3">
               <span className="text-gray-300 font-medium">Confidence Level</span>
               <span className={`text-2xl font-bold ${colors.text}`}>
-                {Math.round(primaryEmotion.confidence * 100)}%
+                {Math.round(primaryEmotion.score * 100)}%
               </span>
             </div>
             <div className="w-full bg-gray-900/50 rounded-full h-4 overflow-hidden border border-white/10">
               <div
                 className={`${colors.bar} h-full rounded-full transition-all duration-1200 ease-out shadow-lg shadow-white/20`}
-                style={{ width: `${primaryEmotion.confidence * 100}%` }}
+                style={{ width: `${primaryEmotion.score * 100}%` }}
               />
             </div>
           </div>
         </div>
 
-        {/* Display emotion scores if available */}
-        {primaryEmotion.scores && (
+        {/* Display top 3 emotion predictions */}
+        {emotions.length > 0 && (
           <div>
             <h3 className="text-sm font-bold text-gray-300 uppercase tracking-widest mb-6">
-              Emotional Spectrum (All 28 Emotions)
+              Top Emotion Predictions
             </h3>
 
-            <div className="space-y-3 max-h-96 overflow-y-auto pr-2">
-              {Object.entries(primaryEmotion.scores)
-                .sort(([, a], [, b]) => b - a)
-                .map(([emotion, score], index) => {
-                  const emotionColor = emotionColors[emotion] || emotionColors.neutral;
+            <div className="space-y-3">
+              {emotions.map((emotion, index) => {
+                const emotionColor = emotionColors[emotion.label] || emotionColors.neutral;
 
-                  return (
-                    <div
-                      key={emotion}
-                      className="group/emotion relative p-3 rounded-lg bg-white/5 border border-white/10 hover:bg-white/10 hover:border-white/20 transition-all"
-                      style={{
-                        animation: `slideIn 0.6s ease-out ${index * 0.05}s both`,
-                      }}
-                    >
-                      <div className={`absolute inset-0 bg-gradient-to-r ${emotionColor.gradient2}/10 opacity-0 group-hover/emotion:opacity-100 transition-opacity rounded-lg`} />
+                return (
+                  <div
+                    key={`${emotion.label}-${index}`}
+                    className="group/emotion relative p-3 rounded-lg bg-white/5 border border-white/10 hover:bg-white/10 hover:border-white/20 transition-all"
+                    style={{
+                      animation: `slideIn 0.6s ease-out ${index * 0.05}s both`,
+                    }}
+                  >
+                    <div className={`absolute inset-0 bg-gradient-to-r ${emotionColor.gradient2}/10 opacity-0 group-hover/emotion:opacity-100 transition-opacity rounded-lg`} />
 
-                      <div className="relative flex items-center gap-3">
-                        <div className="flex-1 min-w-0">
-                          <div className="flex justify-between items-center mb-2">
-                            <span className="font-semibold text-white capitalize text-sm truncate">
-                              {emotion}
-                            </span>
-                            <span className={`text-xs font-bold ${emotionColor.text} drop-shadow-sm flex-shrink-0 ml-2`}>
-                              {Math.round(score * 100)}%
-                            </span>
-                          </div>
-                          <div className="w-full bg-gray-800/60 rounded-full h-1.5 overflow-hidden border border-white/10">
-                            <div
-                              className={`${emotionColor.bar} h-full rounded-full transition-all duration-1200 ease-out`}
-                              style={{ width: `${score * 100}%` }}
-                            />
-                          </div>
+                    <div className="relative flex items-center gap-3">
+                      <div className="flex-1 min-w-0">
+                        <div className="flex justify-between items-center mb-2">
+                          <span className="font-semibold text-white capitalize text-sm truncate">
+                            {emotion.label}
+                          </span>
+                          <span className={`text-xs font-bold ${emotionColor.text} drop-shadow-sm flex-shrink-0 ml-2`}>
+                            {Math.round(emotion.score * 100)}%
+                          </span>
+                        </div>
+                        <div className="w-full bg-gray-800/60 rounded-full h-1.5 overflow-hidden border border-white/10">
+                          <div
+                            className={`${emotionColor.bar} h-full rounded-full transition-all duration-1200 ease-out`}
+                            style={{ width: `${emotion.score * 100}%` }}
+                          />
                         </div>
                       </div>
                     </div>
-                  );
-                })}
+                  </div>
+                );
+              })}
             </div>
           </div>
         )}

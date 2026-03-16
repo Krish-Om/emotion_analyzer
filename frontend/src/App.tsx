@@ -5,9 +5,8 @@ import EmotionResults from './components/EmotionResults';
 import { analyzeEmotion, checkHealth, APIError } from './utils/api';
 
 interface EmotionResult {
-  emotion: string;
-  confidence: number;
-  scores?: Record<string, number>;
+  label: string;
+  score: number;
 }
 
 function App() {
@@ -42,15 +41,8 @@ function App() {
 
     try {
       const result = await analyzeEmotion(text);
-      // Convert API response to EmotionResult format
-      const emotionResults: EmotionResult[] = [
-        {
-          emotion: result.emotion,
-          confidence: result.confidence,
-          scores: result.scores,
-        },
-      ];
-      setEmotions(emotionResults);
+      // Use predictions directly from API response
+      setEmotions(result.predictions);
     } catch (error) {
       if (error instanceof APIError) {
         setServerError(error.message);

@@ -2,11 +2,14 @@
 const API_BASE_URL = "http://localhost:8000/v1";
 
 // Response types
+export interface Prediction {
+  label: string;
+  score: number;
+}
+
 export interface EmotionAnalysisResponse {
   text: string;
-  emotion: string;
-  scores: Record<string, number>;
-  confidence: number;
+  predictions: Prediction[];
 }
 
 export interface EmotionsListResponse {
@@ -22,7 +25,10 @@ export interface HealthCheckResponse {
 
 // Error handling
 export class APIError extends Error {
-  constructor(public status: number, message: string) {
+  constructor(
+    public status: number,
+    message: string,
+  ) {
     super(message);
     this.name = "APIError";
   }
@@ -48,7 +54,7 @@ export async function checkHealth(): Promise<HealthCheckResponse> {
     }
     throw new APIError(
       0,
-      "Unable to reach the server. Make sure the backend is running on http://localhost:8000"
+      "Unable to reach the server. Make sure the backend is running on http://localhost:8000",
     );
   }
 }
@@ -81,7 +87,7 @@ export async function getAvailableEmotions(): Promise<EmotionsListResponse> {
  * @returns Promise with emotion analysis results
  */
 export async function analyzeEmotion(
-  text: string
+  text: string,
 ): Promise<EmotionAnalysisResponse> {
   if (!text.trim()) {
     throw new APIError(400, "Text cannot be empty");
@@ -100,7 +106,7 @@ export async function analyzeEmotion(
       const errorData = await response.json();
       throw new APIError(
         response.status,
-        errorData.detail || "Failed to analyze emotion"
+        errorData.detail || "Failed to analyze emotion",
       );
     }
 
@@ -111,7 +117,7 @@ export async function analyzeEmotion(
     }
     throw new APIError(
       0,
-      "Failed to analyze emotion. Make sure the backend is running."
+      "Failed to analyze emotion. Make sure the backend is running.",
     );
   }
 }
@@ -123,7 +129,7 @@ export async function analyzeEmotion(
  */
 export function getTopEmotions(
   scores: Record<string, number>,
-  limit: number = 5
+  limit: number = 5,
 ): Array<{ emotion: string; score: number }> {
   return Object.entries(scores)
     .map(([emotion, score]) => ({ emotion, score }))
