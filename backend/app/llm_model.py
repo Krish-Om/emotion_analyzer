@@ -49,7 +49,7 @@ class EmotionAnalyzer:
             self.tokenizer = AutoTokenizer.from_pretrained(
                 model_path, local_files_only=True
             )
-            self.model = AutoModelForSequenceClassification.from_pretrained(
+            self.model =AutoModelForSequenceClassification.from_pretrained(
                 model_path, local_files_only=True
             )
             self.model.eval()
